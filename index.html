@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>藥物語音搜尋</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+padding:40px;
+}
+
+
+button{
+
+font-size:25px;
+padding:15px 30px;
+
+border-radius:20px;
+
+}
+
+#result{
+
+margin-top:30px;
+font-size:24px;
+
+}
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<h1>
+🎤 藥物語音搜尋
+</h1>
+
+
+<button onclick="startVoice()">
+開始說藥名
+</button>
+
+
+<div id="result">
+等待輸入...
+</div>
+
+
+
+
+<script>
+
+
+const SpeechRecognition =
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
+
+
+let recognition;
+
+
+if(!SpeechRecognition){
+
+alert(
+"你的瀏覽器不支援語音"
+);
+
+}
+
+
+recognition =
+new SpeechRecognition();
+
+
+recognition.lang="zh-HK";
+
+
+recognition.continuous=false;
+
+
+recognition.interimResults=false;
+
+
+
+function startVoice(){
+
+
+recognition.start();
+
+
+document.getElementById("result")
+.innerHTML=
+"🎤 請說藥物名稱";
+
+
+}
+
+
+
+recognition.onresult=function(e){
+
+
+let text=
+e.results[0][0].transcript;
+
+
+document.getElementById("result")
+.innerHTML=
+"你說："+text;
+
+
+
+searchMedicine(text);
+
+
+}
+
+
+
+recognition.onerror=function(e){
+
+console.log(e);
+
+
+document.getElementById("result")
+.innerHTML=
+"錯誤："+e.error;
+
+
+}
+
+
+
+
+function searchMedicine(keyword){
+
+
+fetch(
+"https://script.google.com/macros/s/AKfycbwRa2UBZHrwl9qLeujOoU7br2qF_6rEDsrADi0mt167Oo4Bs8L-Z9jculRo-ShtSM6TFA/exec?name="
++encodeURIComponent(keyword)
+
+)
+
+.then(r=>r.json())
+
+.then(data=>{
+
+
+console.log(data);
+
+
+});
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
