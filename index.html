@@ -5,32 +5,68 @@
 
 <meta charset="UTF-8">
 
-<title>藥物語音搜尋</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>
+🎤 藥物語音搜尋
+</title>
+
 
 <style>
 
 body{
+
 font-family:Arial;
+
 text-align:center;
-padding:40px;
+
+padding:30px;
+
+background:#f5f7fb;
+
 }
 
 
 button{
 
 font-size:25px;
-padding:15px 30px;
+
+padding:15px 35px;
 
 border-radius:20px;
 
+border:none;
+
+cursor:pointer;
+
 }
+
 
 #result{
 
 margin-top:30px;
-font-size:24px;
+
+font-size:22px;
 
 }
+
+
+.card{
+
+background:white;
+
+border-radius:15px;
+
+padding:15px;
+
+margin:15px auto;
+
+max-width:400px;
+
+box-shadow:0 2px 8px #ccc;
+
+}
+
 
 </style>
 
@@ -47,12 +83,17 @@ font-size:24px;
 
 
 <button onclick="startVoice()">
+
 開始說藥名
+
 </button>
 
 
+
 <div id="result">
+
 等待輸入...
+
 </div>
 
 
@@ -61,25 +102,33 @@ font-size:24px;
 <script>
 
 
+// 改成你的 Apps Script Web App URL
+
+const API_URL =
+"https://script.google.com/macros/s/你的WEBAPP_ID/exec";
+
+
+
+
 const SpeechRecognition =
 window.SpeechRecognition ||
 window.webkitSpeechRecognition;
 
 
-let recognition;
-
 
 if(!SpeechRecognition){
 
 alert(
-"你的瀏覽器不支援語音"
+"請使用 Chrome 瀏覽器"
 );
 
 }
 
 
-recognition =
+
+const recognition =
 new SpeechRecognition();
+
 
 
 recognition.lang="zh-HK";
@@ -91,50 +140,97 @@ recognition.continuous=false;
 recognition.interimResults=false;
 
 
+recognition.maxAlternatives=5;
+
+
+
+
 
 function startVoice(){
+
+
+document.getElementById(
+"result"
+).innerHTML=
+"🎤 請說藥物名稱";
 
 
 recognition.start();
 
 
-document.getElementById("result")
-.innerHTML=
-"🎤 請說藥物名稱";
-
-
 }
 
 
 
-recognition.onresult=function(e){
 
 
-let text=
-e.results[0][0].transcript;
+recognition.onresult=function(event){
 
 
-document.getElementById("result")
-.innerHTML=
-"你說："+text;
+let word =
+event.results[0][0].transcript;
 
 
 
-searchMedicine(text);
+document.getElementById(
+"result"
+).innerHTML=
+"搜尋："+word;
 
 
-}
+
+searchMedicine(word);
+
+
+
+};
+
+
 
 
 
 recognition.onerror=function(e){
 
-console.log(e);
 
-
-document.getElementById("result")
-.innerHTML=
+document.getElementById(
+"result"
+).innerHTML=
 "錯誤："+e.error;
+
+
+};
+
+
+
+
+
+
+function searchMedicine(word){
+
+
+fetch(
+API_URL+
+"?name="+
+encodeURIComponent(word)
+
+)
+
+
+.then(
+response=>response.json()
+)
+
+
+.then(
+data=>{
+
+
+showResult(data);
+
+
+}
+
+);
 
 
 }
@@ -142,21 +238,61 @@ document.getElementById("result")
 
 
 
-function searchMedicine(keyword){
 
 
-fetch(
-"https://script.google.com/macros/s/AKfycbwRa2UBZHrwl9qLeujOoU7br2qF_6rEDsrADi0mt167Oo4Bs8L-Z9jculRo-ShtSM6TFA/exec?name="
-+encodeURIComponent(keyword)
 
-)
-
-.then(r=>r.json())
-
-.then(data=>{
+function showResult(data){
 
 
-console.log(data);
+let html="";
+
+
+
+if(data.length===0){
+
+
+html="❌ 找不到藥物";
+
+
+}
+
+
+else{
+
+
+data.forEach(item=>{
+
+
+html+=`
+
+<div class="card">
+
+<h2>
+${item.name}
+</h2>
+
+
+藥號：
+${item.code}
+
+<br>
+
+位置：
+${item.location}
+
+<br>
+
+存量：
+${item.stock}
+
+<br>
+
+匹配度：
+${item.score}%
+
+</div>
+
+`;
 
 
 });
@@ -166,9 +302,20 @@ console.log(data);
 
 
 
+document.getElementById(
+"result"
+).innerHTML=html;
+
+
+}
+
+
+
 </script>
 
 
+
 </body>
+
 
 </html>
